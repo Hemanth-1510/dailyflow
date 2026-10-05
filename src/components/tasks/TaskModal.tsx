@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CategoryData, Priority, TaskData } from '@/types'
+import { CategoryData, Priority, TaskData, RecurringType } from '@/types'
 import { X, Calendar, Clock, Tag as TagIcon, AlertCircle, Loader2 } from 'lucide-react'
 
 interface TaskModalProps {
@@ -27,7 +27,7 @@ export default function TaskModal({
   const [priority, setPriority] = useState<Priority>('MEDIUM')
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
-  const [recurringType, setRecurringType] = useState<string | null>(null)
+  const [recurringType, setRecurringType] = useState<RecurringType | null>(null)
   const [recurrenceDays, setRecurrenceDays] = useState<number | null>(null)
 
   useEffect(() => {

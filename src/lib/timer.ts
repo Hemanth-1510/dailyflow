@@ -8,6 +8,8 @@
 
 export interface TimerSession {
   id: string
+  taskId?: string | null
+  categoryId?: string | null
   startedAt: Date
   pausedAt: Date | null
   lastResumedAt: Date | null
