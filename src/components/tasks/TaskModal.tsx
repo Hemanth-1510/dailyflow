@@ -200,7 +200,7 @@ export default function TaskModal({
               </label>
               <select
                 value={recurringType || ''}
-                onChange={(e) => setRecurringType(e.target.value || null)}
+                onChange={(e) => setRecurringType(e.target.value ? (e.target.value as RecurringType) : null)}
                 className="w-full px-3 py-2.5 bg-slate-950/60 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="">None</option>
