@@ -13,14 +13,8 @@ export default function LandingPage() {
           <span className="font-bold text-xl">DailyFlow</span>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/login" className="text-sm text-slate-300 hover:text-white transition-colors px-4 py-2">
-            Sign in
-          </Link>
-          <Link
-            href="/signup"
-            className="text-sm bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-          >
-            Get started
+          <Link href="/dashboard" className="text-sm text-slate-300 hover:text-white transition-colors px-4 py-2">
+            Open dashboard
           </Link>
         </div>
       </nav>
@@ -44,17 +38,11 @@ export default function LandingPage() {
           </p>
           <div className="flex items-center justify-center gap-4 pt-4">
             <Link
-              href="/signup"
+              href="/dashboard"
               className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-semibold text-lg transition-all hover:scale-105 shadow-lg shadow-indigo-600/25"
             >
-              Start for free
+              Open dashboard
               <ArrowRight className="w-5 h-5" />
-            </Link>
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 text-slate-300 hover:text-white px-6 py-3 rounded-xl border border-slate-700 hover:border-slate-500 transition-all"
-            >
-              Sign in
             </Link>
           </div>
         </div>
