@@ -1,0 +1,221 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  timezone      String    @default("UTC")
+  theme         String    @default("system")
+  timeFormat    String    @default("12h")
+  firstDayOfWeek Int      @default(1)
+  defaultTaskDuration Int @default(30)
+  onboardingDone Boolean  @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  categories    Category[]
+  tasks         Task[]
+  timeSessions  TimeSession[]
+  tags          Tag[]
+  passwordResets PasswordReset[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expires   DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("password_resets")
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  OVERDUE
+}
+
+enum RecurringType {
+  DAILY
+  WEEKDAYS
+  WEEKLY
+  MONTHLY
+  CUSTOM
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  color       String   @default("#6366f1")
+  icon        String   @default("folder")
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks        Task[]
+  timeSessions TimeSession[]
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@map("categories")
+}
+
+model Task {
+  id                String     @id @default(cuid())
+  userId            String
+  categoryId        String?
+  title             String
+  description       String?
+  date              DateTime?
+  startTime         DateTime?
+  endTime           DateTime?
+  dueDate           DateTime?
+  estimatedDuration Int?
+  priority          Priority   @default(MEDIUM)
+  status            TaskStatus @default(PENDING)
+  completedAt       DateTime?
+  notes             String?
+  recurringType     RecurringType?
+  recurringRule     String?
+  recurringParentId String?
+  reminderMinutes   Int?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category     Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  timeSessions TimeSession[]
+  taskTags     TaskTag[]
+
+  @@index([userId])
+  @@index([userId, date])
+  @@index([userId, status])
+  @@index([categoryId])
+  @@index([completedAt])
+  @@index([recurringParentId])
+  @@map("tasks")
+}
+
+model TimeSession {
+  id            String    @id @default(cuid())
+  taskId        String?
+  userId        String
+  categoryId    String?
+  label         String?
+  startedAt     DateTime
+  pausedAt      DateTime?
+  lastResumedAt DateTime?
+  endedAt       DateTime?
+  duration      Int       @default(0)
+  isActive      Boolean   @default(true)
+  isStopwatch   Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  task     Task?     @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([taskId])
+  @@index([userId, isActive])
+  @@index([startedAt])
+  @@map("time_sessions")
+}
+
+model Tag {
+  id        String    @id @default(cuid())
+  userId    String
+  name      String
+  createdAt DateTime  @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskTags TaskTag[]
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@map("tags")
+}
+
+model TaskTag {
+  taskId String
+  tagId  String
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, tagId])
+  @@map("task_tags")
+}
