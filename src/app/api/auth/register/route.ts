@@ -19,7 +19,9 @@ export async function POST(req: NextRequest) {
 
     const { name, email, password } = parsed.data
 
-    const existing = await prisma.user.findUnique({ where: { email } })
+    const normalizedEmail = email.trim().toLowerCase()
+
+    const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } })
     if (existing) {
       return NextResponse.json({ error: 'Email already registered' }, { status: 409 })
     }
@@ -29,21 +31,24 @@ export async function POST(req: NextRequest) {
     const user = await prisma.user.create({
       data: {
         name,
-        email,
+        email: normalizedEmail,
         passwordHash,
-        categories: {
-          createMany: {
-            data: [
-              { name: 'Work', color: '#6366f1', icon: 'briefcase', description: 'Work related tasks' },
-              { name: 'Personal', color: '#ec4899', icon: 'user', description: 'Personal errands' },
-              { name: 'Health', color: '#10b981', icon: 'heart', description: 'Workouts & health' },
-              { name: 'Learning', color: '#f59e0b', icon: 'book', description: 'Study & skill development' },
-            ],
-          },
-        },
       },
       select: { id: true, name: true, email: true },
     })
+
+    try {
+      await prisma.category.createMany({
+        data: [
+          { userId: user.id, name: 'Work', color: '#6366f1', icon: 'briefcase', description: 'Work related tasks' },
+          { userId: user.id, name: 'Personal', color: '#ec4899', icon: 'user', description: 'Personal errands' },
+          { userId: user.id, name: 'Health', color: '#10b981', icon: 'heart', description: 'Workouts & health' },
+          { userId: user.id, name: 'Learning', color: '#f59e0b', icon: 'book', description: 'Study & skill development' },
+        ],
+      })
+    } catch (categoryError) {
+      console.warn('[Register] Category seed failed, continuing:', categoryError)
+    }
 
     return NextResponse.json({ user }, { status: 201 })
   } catch (error) {
